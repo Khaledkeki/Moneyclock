@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MoneyClock</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>MoneyClock</h1>
+    <div id="authSection">
+    <h2>Sign Up</h2>
+<form id="signupForm">
+    <input type="email" id="signupEmail" placeholder="Email" required>
+    <br><br>
+    <input type="password" id="signupPassword" placeholder="Password" required>
+    <br><br>
+    <input type="number" id="hourlyWage" placeholder="Hourly Wage" required>
+    <br><br>
+    <button type="submit">Sign Up</button>
+</form>
+<h2>Login</h2>
+<form id = "loginForm">
+    <input type = "email" id = "loginEmail" placeholder = "Email" required>
+    <br><br>
+    <input type = "password" id="loginPassword" placeholder="Password" required>
+    <br><br>
+    <button type = "submit">Login</button>
+</form>
+</div>
+<div id="appSection" class="hidden">
+<button id="logoutBtn">Logout</button>
+<p id="welcomeMsg"></p>
+<h2>Calculate Hours</h2>
+<form id = "calcForm">
+<input type = "text" id = "itemName" placeholder="Item Name" required>
+<br><br>
+<input type="number" id = "price" placeholder="Price" required>
+<br><br>
+<button type="submit">calculate</button>
+</form>
+<div id="result"></div>
+<button id = "historyBtn">view History</button>
+<div id = "historyList"></div>
+
+<p id="summaryResult"></p>
+</div>
+<script>
+let currentUser = null;
+let currentWage = null;
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    });
+    const data= await response.json();
+    alert(data.message || data.Error);
+    if (data.message) {
+        currentUser = email;
+        currentWage = data.hourly_wage;
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('appSection').classList.remove('hidden');
+        document.getElementById('welcomeMsg').innerText = "Welcome, " + email;
+        loadSummary();
+
+    }
+
+}
+);
+
+document.getElementById('calcForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    if (!currentUser) {
+        alert("please Login first");
+        return;
+    }
+
+    const item_name = document.getElementById('itemName').value;
+    const price = document.getElementById('price').value;
+
+    const response = await fetch('http://localhost:8000/calculation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: currentUser,
+            item_name: item_name,
+            price: parseFloat(price),
+            hourly_wage: currentWage
+        })
+    });
+    const data = await response.json();
+document.getElementById('result').innerHTML = `
+    <div class="item-card">
+        <h3>Item: ${item_name}</h3>
+        <p>${data.hours_needed} hours of your life!</p>
+        <p>$${price}</p>
+        <div class="card-buttons">
+            <button onclick="alert('Added to purchases!')">Purchase</button>
+            <button class="save-btn" onclick="document.getElementById('result').innerHTML=''">Ignore</button>
+        </div>
+    </div>
+`;});
+
+
+
+let historyOpen = false;
+document.getElementById('historyBtn').addEventListener('click', async function() {
+    if (!currentUser) {
+        alert("Please login first");
+        return;
+    }
+    
+    if (historyOpen) {
+        document.getElementById('historyList').innerHTML = '';
+        historyOpen = false;
+        return;
+    }
+
+    const response = await fetch('http://localhost:8000/history/' + currentUser);
+    const data = await response.json();
+
+    let html = '';
+    for (let item of data) {
+        html += `
+            <div class="item-card">
+                <h3>Item: ${item[2]}</h3>
+                <p>${item[4]} hours of your life!</p>
+                <p>$${item[3]}</p>
+                <div class="card-buttons">
+                    <button onclick="markPurchased(${item[0]}, true)">Purchase</button>
+                    <button class="save-btn" onclick="markPurchased(${item[0]}, false)">Save</button>
+                </div>
+                <p>${item[5] ? '✓ Purchased' : '○ Not purchased'}</p>
+            </div>
+        `;
+    }
+    document.getElementById('historyList').innerHTML = html;
+    historyOpen = true;
+});
+document.getElementById('logoutBtn').addEventListener('click', async function(){
+    currentUser = null;
+    currentWage = null;
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('appSection').classList.add('hidden');
+});
+async function markPurchased(id, purchased) {
+    const response = await fetch('http://localhost:8000/purchase', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            purchased: purchased
+        })
+    });
+    const data = await response.json();
+    alert(data.message);
+    
+    historyOpen = false;
+    document.getElementById('historyBtn').click();
+    
+    loadSummary();
+}
+async function loadSummary() {
+    const response = await fetch('http://localhost:8000/summary/' + currentUser);
+    const data = await response.json();
+    document.getElementById('summaryResult').innerHTML = `
+        <div class="budget-box">
+            <h2>Monthly Budget</h2>
+            <p>${data.hours_spent || 0}h spent / ${data.hours_saved || 0}h saved</p>
+        </div>
+    `;
+}
+</script>
+<script>
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const hourly_wage = document.getElementById('hourlyWage').value;
+    
+    const response = await fetch('http://localhost:8000/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password,
+            hourly_wage: parseFloat(hourly_wage)
+        })
+    });
+    
+    const data = await response.json();
+    alert(data.message);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #1a1a2e;
+    color: #ffffff;
+}
+
+h1 {
+    color: #ff6b35;
+    text-align: center;
+}
+
+h2 {
+    color: #ff6b35;
+    border-bottom: 1px solid #ff6b35;
+    padding-bottom: 5px;
+}
+
+input {
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border: 1px solid #ff6b35;
+    border-radius: 5px;
+    background-color: #16213e;
+    color: #ffffff;
+}
+
+input::placeholder {
+    color: #888;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff8c42;
+}
+
+.hidden {
+    display: none;
+}
+
+.item-card {
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.item-card h3 {
+    color: #ff6b35;
+    margin-top: 0;
+}
+
+.item-card p {
+    font-size: 18px;
+}
+
+.card-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.card-buttons button {
+    min-width: 100px;
+}
+
+.save-btn {
+    background-color: transparent;
+    border: 2px solid #ff6b35;
+    color: #ff6b35;
+}
+
+.save-btn:hover {
+    background-color: #ff6b35;
+    color: white;
+}
+
+.budget-box {
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.budget-box h2 {
+    border: none;
+    margin: 0;
+}
+
+#historyList {
+    margin-top: 20px;
+}
