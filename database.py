@@ -1,21 +1,18 @@
 import psycopg2
 from psycopg2 import Error
+import os
 
 def data():
     try:
-        connection = psycopg2.connect(user = "postgres", password="Dontell_1", host="127.0.0.1", port = "5432", database = "Moneyclock")
+        DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:Dontell_1@127.0.0.1:5432/Moneyclock')
+        connection = psycopg2.connect(DATABASE_URL)
 
         cursor = connection.cursor()
-        print("postgresSQL server information")
-        print(connection.get_dsn_parameters(), "\n")
-        cursor.execute("SELECT VERSION();")
-        record = cursor.fetchone()
-        print("You are connected to -", record, "\n")
+        print("Connected to database")
         return connection 
 
     except (Exception, Error) as error:
-        print("Error while connecting to postgresSQL", error)
-    
+        print("Error while connecting to PostgreSQL", error)
 
 
 
