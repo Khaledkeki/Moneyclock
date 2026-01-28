@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from database import create_user, get_user, save_calculation, get_history, update_purchased, get_summary
+from database import create_user, get_user, save_calculation, get_history, update_purchased, get_summary, data
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -13,6 +13,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.on_event("startup")
+def startup():
+    create_tables
 
 @app.get("/")
 async def home():
@@ -101,6 +104,39 @@ async def mark_purchased(input:Purchase):
 async def summary(user_id: str):
     result = get_summary(user_id)
     return result
+
+def create_tables():
+    try:
+        connection = data()
+        cursor = connection.cursor()
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(100) UNIQUE,
+                password VARCHAR(100),
+                hourly_wage INTEGER
+            )
+        """)
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS budget (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(100),
+                item_name VARCHAR(100),
+                price INTEGER,
+                hours_needed INTEGER,
+                purchased BOOLEAN DEFAULT FALSE
+            )
+        """)
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Tables created successfully")
+    except Exception as e:
+        print("Error creating tables:", e)
+
 
 
 
