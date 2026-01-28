@@ -5,6 +5,11 @@ import os
 def data():
     try:
         DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:Dontell_1@127.0.0.1:5432/Moneyclock')
+        
+        # Fix for Render: replace postgres:// with postgresql://
+        if DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        
         connection = psycopg2.connect(DATABASE_URL)
 
         cursor = connection.cursor()
