@@ -15,7 +15,7 @@ app.add_middleware(
 )
 @app.on_event("startup")
 def startup():
-    create_tables
+    create_tables()
 
 @app.get("/")
 async def home():
@@ -136,6 +136,8 @@ def create_tables():
         print("Tables created successfully")
     except Exception as e:
         print("Error creating tables:", e)
+
+    create_tables()
 
 
 
